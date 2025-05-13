@@ -10,9 +10,10 @@ interface CellProps {
     cellSize: number;
     selected: boolean;
     availableMoves: number[][];
+    kingPosition: { row: number, col: number } | null
 }
 
-export const Cell = ({ row, col, piece, onClick, pieceIcon, movingPiece, cellSize, selected, availableMoves }: CellProps) => {
+export const Cell = ({ row, col, piece, onClick, pieceIcon, movingPiece, cellSize, selected, availableMoves, kingPosition }: CellProps) => {
     const isLightCell = (row + col) % 2 === 0;
     const cellColor = isLightCell ? "bg-[#f0d9b5]" : "bg-[#b58863]";
 
@@ -25,7 +26,9 @@ export const Cell = ({ row, col, piece, onClick, pieceIcon, movingPiece, cellSiz
         : {};
 
     const isMove = availableMoves.some(([moveRow, moveCol]) => moveRow === row && moveCol === col);
+    const isKingInCheck = kingPosition && kingPosition.row === row && kingPosition.col === col;
 
+    console.log("Is King In Check: ", isKingInCheck)
     return (
         <div
             style={{ backgroundColor: selected ? "#829769" : "", }}
@@ -67,10 +70,16 @@ export const Cell = ({ row, col, piece, onClick, pieceIcon, movingPiece, cellSiz
                 <img
                     src={pieceIcon}
                     alt={`${piece?.color} ${piece?.name}`}
-                    className="absolute z-10"
-                    style={{ ...animationStyle, pointerEvents: "none" }}
+                    className={`absolute  `}
+                    style={{
+                        ...animationStyle,
+                        filter: isKingInCheck ? 'drop-shadow(0 0 10px rgba(255, 0, 0, 1)) drop-shadow(0 0 20px rgba(255, 0, 0, 0.7)) drop-shadow(0 0 30px rgba(255, 0, 0, 0.5))' : 'none',
+                    }}
                 />
+
+
             )}
+
         </div>
     );
 };

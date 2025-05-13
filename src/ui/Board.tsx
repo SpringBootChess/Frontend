@@ -30,7 +30,8 @@ export const Board = () => {
     const [board, setBoard] = useState<Record<string, PieceType | null>>({});
     const [selectedCell, setSelectedCell] = useState<{ row: number, col: number } | null>(null);
     const [movingPiece, setMovingPiece] = useState<{ start: { row: number, col: number }, end: { row: number, col: number }, piece: PieceType } | null>(null);
-    const [moves, setMoves] = useState<number[][]>([]); // Lista de movimientos disponibles
+    const [moves, setMoves] = useState<number[][]>([]);
+    const [kingPosition, setKingPosition] = useState<{ row: number, col: number } | null>(null);
 
     const [turn, setTurn] = useState<string>("");
 
@@ -80,6 +81,7 @@ export const Board = () => {
             .catch((e) => console.log("Error: ", e));
     }, []);
 
+
     useEffect(() => {
         if (!boardRef.current) return;
 
@@ -94,6 +96,7 @@ export const Board = () => {
         return () => resizeObserver.disconnect();
     }, []);
 
+
     useEffect(() => {
         if (selectedCell) {
             axios.post(`${import.meta.env.VITE_API_URL}matches/move/${matchId}`, {
@@ -107,6 +110,7 @@ export const Board = () => {
         }
 
     }, [setSelectedCell, selectedCell])
+
 
     const onClickCell = (row: number, col: number, piece?: PieceType | null) => {
         if (!selectedCell && piece && turn === board[`${row}-${col}`]?.color) {
@@ -126,7 +130,17 @@ export const Board = () => {
                 endRow: row,
                 endCol: col,
             })
-                .then(() => {
+                .then((response: any) => {
+                    console.log("Response:", response)
+                    const kingPosition = response.data?.kingPosition;
+
+                    if (kingPosition) {
+                        setKingPosition({
+                            row: kingPosition.row,
+                            col: kingPosition.col
+                        });
+                    }
+
                     passTurn();
                     setMovingPiece({
                         start: selectedCell,
@@ -183,6 +197,7 @@ export const Board = () => {
                         cellSize={cellSize}
                         selected={selectedCell?.row === row && selectedCell.col === col}
                         availableMoves={moves}
+                        kingPosition={kingPosition}
                     />
                 );
             })}
